@@ -1,39 +1,76 @@
-const world = 'world';
+import axios, { Axios, AxiosError, AxiosResponse } from "axios";
+import { axiosInstance } from "./helper";
+import fs from "fs";
 
-function getRandomNonce() {
-  const arrayBytes = new Uint8Array(32 / 2)
-  crypto.getRandomValues(arrayBytes)
-  return Array.from(arrayBytes, byte => byte.toString(16).padStart(2, '0')).join('');
+async function getAllUsers() {
+  const { status, data: allUsers } = await axiosInstance.post(
+    "https://challenge.sunvoy.com/api/users"
+  );
+  return {
+    status,
+    allUsers,
+  };
 }
 
-async function login(): Promise<Response | string> {
-  const credentials = {
-    nonce: "d8633b9ba9c891338816136de817baf0",
-    username: "demo@example.org",
-    password: "test"
-  }
-
-  try {
-  const response = await fetch('https://challenge.sunvoy.com/login', {
-    method: "POST",
-    headers: {
-      'Content-Type': "application/json"
-    },
-    body: JSON.stringify(credentials),
-    credentials: 'include'
-  })
-
-  return response 
-  } catch (error) {
-    console.log(error)
-    return 'There is a Big error here'
-  }
+async function getCurrentUser() {
+  const { status, data: currentUser } = await axiosInstance.post(
+    "https://api.challenge.sunvoy.com/api/settings"
+  );
+  return {
+    status,
+    currentUser,
+  };
 }
 
-async function main(who: string = world) {
-  const apiRes = await login()
-  console.log(apiRes)
-  return `Hello ${who}! `;
+function main() {
+  getAllUsers()
+    .then((response) => response)
+    .then(({ status, allUsers }) => {
+      if (status === 200) {
+        // Create a JSON Logic
+        try {
+          fs.writeFileSync("users.json", JSON.stringify(allUsers));
+        } catch (error) {
+          console.error(error);
+
+          throw error;
+        }
+
+        console.log("Users.json written successfully");
+      }
+    })
+    .catch((error) => {
+      if (error instanceof AxiosError) {
+        console.error(
+          "Error response and status are: ",
+          error.response?.data,
+          error.response?.status
+        );
+      } else {
+        console.error("Error");
+      }
+    });
+
+  getCurrentUser()
+    .then((response) => response)
+    .then(({ status, currentUser }) => {
+      if (status == 200) {
+        try {
+          const jsonData = fs.readFileSync("users.json").toString();
+
+          const user = JSON.parse(jsonData);
+
+          user.push(currentUser)
+
+          fs.writeFileSync("users.json", user)
+        } catch (error) {}
+      }
+    })
+    .catch((err) => {
+      if (err instanceof AxiosError) {
+      } else {
+      }
+    });
 }
 
 main();
