@@ -1,8 +1,6 @@
 import axios, { Axios, AxiosError, AxiosResponse } from "axios";
 import { axiosInstance } from "./helper";
 import fs from "fs";
-import crypto from "crypto";
-import { constrainedMemory } from "process";
 
 async function getAllUsers() {
   const { status, data: allUsers } = await axiosInstance.post(
