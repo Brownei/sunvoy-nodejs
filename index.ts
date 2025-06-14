@@ -2,6 +2,7 @@ import axios, { Axios, AxiosError, AxiosResponse } from "axios";
 import { axiosInstance } from "./helper";
 import fs from "fs";
 import crypto from "crypto";
+import { constrainedMemory } from "process";
 
 async function getAllUsers() {
   const { status, data: allUsers } = await axiosInstance.post(
@@ -105,6 +106,8 @@ function main() {
               console.error("Error");
             }
           });
+
+          console.log("User added successfully")
       }
     })
     .catch((error) => {
